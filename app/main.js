@@ -19,7 +19,7 @@ const parseHttpData = (data) => {
     headers.host = secondLine.split(' ')[1];
     headers.userAgent = thirdLine.split(' ')[1];
     req.headers = headers;
-    const body = dataTransformed[7];
+    const [_, body] = data.toString().split('\r\n\r\n')
     req.body = body;
     return req;
 }
