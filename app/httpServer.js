@@ -26,7 +26,7 @@ module.exports = () => {
                 return;
             }
         }
-        handle404(req,socket);
+        res.status('404 Not Found').send();
     }
 
     const getHandler = (req) => {
