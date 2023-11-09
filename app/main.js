@@ -18,12 +18,68 @@ const parseHttpData = (data) => {
     return req;
 }
 
+// matchPath /echo/:id
+// path /echo/123 
+
+const matcher = (matchPath, req, res) => {
+    const regexStr = new RegExp(`${matchPath
+        .split('/')
+        .map(s => s.startsWith(':') ? '(\\w+)': s)
+        .join('\/')
+    }`) ;
+    const matches  = regexStr.exec(req.path);
+    if(!matches){
+        return null;
+    }
+    req.params = {};
+    matchPath.split('/').forEach((s, index)=> {
+        if(s.startsWith(':')){
+            const key = s.split(':')[1];
+            req.params[key] = matches[index-1];
+        }
+    });
+    return routes[matchPath][req.method];
+}
+
+const routes = {
+    '/': {
+        'GET': (req,socket) => {
+            socket.write(`HTTP/1.1 200 OK\r\n\r\n`);
+        },
+    },
+    '/echo/:id': {
+        'GET': (req,socket) => {
+            const {params} =req;
+            const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${params.id.length}\r\n\r\n${params.id}\r\n\r\n`
+            socket.write(response);
+        }
+    },
+};
+
+const handle404 = (req, socket) => {
+    socket.write(`HTTP/1.1 404 Not Found\r\n\r\n`);
+}
+
+const handleRequest = (req,socket) => {
+    const routeEntries = Object.entries(routes);
+    routeEntries.sort((a, b)=> b[0].length - a[0].length);
+    for(let i = 0 ; i < routeEntries.length ; i++){
+        const handler = matcher(routeEntries[i][0], req);
+        if(!!handler){
+            handler(req,socket);
+            return;
+        }
+    }
+    handle404(req,socket);
+}
+
+
+
 // Uncomment this to pass the first stage
 const server = net.createServer((socket) => {
     socket.on('data', data=> {
         const req = parseHttpData(data);
-        const responseCode = req.path === '/' ? '200 OK' : '404 Not Found';
-        socket.write(`HTTP/1.1 ${responseCode}\r\n\r\n`);
+        handleRequest(req, socket);
         socket.end();
     });
   socket.on("close", () => {
