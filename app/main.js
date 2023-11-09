@@ -1,4 +1,6 @@
 const net = require("net");
+const fs = require('fs');
+const path = require('path');
 
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
@@ -26,6 +28,10 @@ const matcher = (matchPath, req, res) => {
     if(req.path.startsWith('/echo/')){
         req.params.id= req.path.split('/echo/')[1];
         return routes['/echo/:id'][req.method];
+    }
+    if(req.path.startsWith('/files/')){
+        req.params.fileName= req.path.split('/files/')[1];
+        return routes['/files/:fileName'][req.method];
     }
     if(req.path.startsWith('/user-agent')){
         return routes['/user-agent'][req.method];
@@ -58,6 +64,7 @@ const routes = {
     '/': {
         'GET': (req,socket) => {
             socket.write(`HTTP/1.1 200 OK\r\n\r\n`);
+            socket.end();
         },
     },
     '/echo/:id': {
@@ -65,6 +72,7 @@ const routes = {
             const {params} =req;
             const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${params.id.length}\r\n\r\n${params.id}\r\n\r\n`
             socket.write(response);
+            socket.end();
         }
     },
     '/user-agent': {
@@ -72,12 +80,35 @@ const routes = {
             const {headers} =req;
             const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${headers.userAgent.length}\r\n\r\n${headers.userAgent}\r\n\r\n`
             socket.write(response);
+            socket.end();
+        }
+    },
+    '/files/:fileName': {
+        'GET': (req,socket) => {
+            const {params} =req;
+            const {fileName} = params;
+            const directory = process.argv[2].split("=")[1];
+            console.log(directory, fileName)
+            const filePath = path.join(directory, fileName);
+            fs.access(filePath, fs.constants.F_OK, (err) => {
+                if(err){
+                    handle404(req, socket);
+                }else{
+                    fs.readFile(filePath, (err, data)=> {
+                        const response = `HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\n\r\n${data}\r\n\r\n`
+                        socket.write(response);
+                        socket.end();
+                    });  
+                }
+            });
+            
         }
     },
 };
 
 const handle404 = (req, socket) => {
     socket.write(`HTTP/1.1 404 Not Found\r\n\r\n`);
+    socket.end();
 }
 
 const handleRequest = (req,socket) => {
@@ -99,7 +130,6 @@ const server = net.createServer((socket) => {
     socket.on('data', data=> {
         const req = parseHttpData(data);
         handleRequest(req, socket);
-        socket.end();
     });
   socket.on("close", () => {
     socket.end();
@@ -107,4 +137,9 @@ const server = net.createServer((socket) => {
   });
 });
 
+
+
 server.listen(4221, "localhost");
+
+
+//  /Users/sroy/Documents/Github
