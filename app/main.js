@@ -26,14 +26,14 @@ server.get('/', (req, res)=> {
 server.get('/echo/:id', (req, res)=> {
     const {params} =req;
     res.status('200 OK').send(params.id, {
-        contenType: 'text/plain'
+        contentType: 'text/plain'
     });
 });
 
 server.get('/user-agent', (req, res)=> {
     const {headers} =req;
     res.status('200 OK').send(headers.userAgent, {
-        contenType: 'text/plain'
+        contentType: 'text/plain'
     });
 });
 
@@ -48,7 +48,7 @@ server.get('/files/:fileName', (req, res)=> {
         }else{
             fs.readFile(filePath, (err, data)=> {
                 res.status('200 OK').send(data, {
-                    contenType: 'application/octet-stream'
+                    contentType: 'application/octet-stream'
                 });
             });  
         }
