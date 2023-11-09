@@ -2,6 +2,8 @@ const net = require("net");
 const fs = require('fs');
 const path = require('path');
 
+let INPUT_DIRECTORY = '';
+
 // You can use print statements as follows for debugging, they'll be visible when running tests.
 console.log("Logs from your program will appear here!");
 
@@ -87,7 +89,7 @@ const routes = {
         'GET': (req,socket) => {
             const {params} =req;
             const {fileName} = params;
-            const directory = process.argv[2].split("=")[1];
+            const directory = INPUT_DIRECTORY;
             console.log(directory, fileName)
             const filePath = path.join(directory, fileName);
             fs.access(filePath, fs.constants.F_OK, (err) => {
@@ -140,6 +142,17 @@ const server = net.createServer((socket) => {
 
 
 server.listen(4221, "localhost");
+
+process.argv.forEach(function (val, index, array) {
+    console.log(val);
+    if (val === "--directory") {
+      if (process.argv.length > index + 1) {
+        INPUT_DIRECTORY = process.argv[index + 1];
+        console.log("Received input directory:", INPUT_DIRECTORY);
+      }
+    }
+  1
+  });
 
 
 //  /Users/sroy/Documents/Github
