@@ -26,7 +26,7 @@ const matcher = (matchPath, req, res) => {
         .split('/')
         .map(s => s.startsWith(':') ? '(\\w+)': s)
         .join('\/')
-    }`) ;
+    }$`) ;
     const matches  = regexStr.exec(req.path);
     if(!matches){
         return null;
@@ -62,7 +62,6 @@ const handle404 = (req, socket) => {
 
 const handleRequest = (req,socket) => {
     const routeEntries = Object.entries(routes);
-    routeEntries.sort((a, b)=> b[0].length - a[0].length);
     for(let i = 0 ; i < routeEntries.length ; i++){
         const handler = matcher(routeEntries[i][0], req);
         if(!!handler){
