@@ -22,23 +22,33 @@ const parseHttpData = (data) => {
 // path /echo/123 
 
 const matcher = (matchPath, req, res) => {
-    const regexStr = new RegExp(`${matchPath
-        .split('/')
-        .map(s => s.startsWith(':') ? '(\\w+)': s)
-        .join('\/')
-    }$`) ;
-    const matches  = regexStr.exec(req.path);
-    if(!matches){
-        return null;
-    }
     req.params = {};
-    matchPath.split('/').forEach((s, index)=> {
-        if(s.startsWith(':')){
-            const key = s.split(':')[1];
-            req.params[key] = matches[index-1];
-        }
-    });
-    return routes[matchPath][req.method];
+    if(req.path.startsWith('/echo/')){
+        req.params.id= req.path.split('/echo/')[1];
+        return routes['/echo/:id'][req.method];
+    }
+    if(req.path === '/'){
+        return routes['/'][req.method];
+    }
+    return null;
+
+    // const regexStr = new RegExp(`${matchPath
+    //     .split('/')
+    //     .map(s => s.startsWith(':') ? '(\\w+)': s)
+    //     .join('\/')
+    // }$`) ;
+    // const matches  = regexStr.exec(req.path);
+    // if(!matches){
+    //     return null;
+    // }
+    // req.params = {};
+    // matchPath.split('/').forEach((s, index)=> {
+    //     if(s.startsWith(':')){
+    //         const key = s.split(':')[1];
+    //         req.params[key] = matches[index-1];
+    //     }
+    // });
+    // return routes[matchPath][req.method];
 }
 
 const routes = {
