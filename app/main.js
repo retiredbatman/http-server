@@ -19,6 +19,8 @@ const parseHttpData = (data) => {
     headers.host = secondLine.split(' ')[1];
     headers.userAgent = thirdLine.split(' ')[1];
     req.headers = headers;
+    const body = dataTransformed[7];
+    req.body = body;
     return req;
 }
 
@@ -90,7 +92,6 @@ const routes = {
             const {params} =req;
             const {fileName} = params;
             const directory = INPUT_DIRECTORY;
-            console.log(directory, fileName)
             const filePath = path.join(directory, fileName);
             fs.access(filePath, fs.constants.F_OK, (err) => {
                 if(err){
@@ -102,8 +103,20 @@ const routes = {
                         socket.end();
                     });  
                 }
+            });         
+        },
+        'POST': (req,socket) => {
+            const {params} =req;
+            const {fileName} = params;
+            const directory = INPUT_DIRECTORY;
+            const filePath = path.join(directory, fileName);
+            console.log(directory, fileName);
+            fs.writeFile(filePath, req.body, (err)=> {
+                if(!err){
+                    socket.write(`HTTP/1.1 201 Created\r\n\r\n`);
+                    socket.end();   
+                }
             });
-            
         }
     },
 };
