@@ -113,8 +113,10 @@ const routes = {
             console.log(directory, fileName);
             fs.writeFile(filePath, req.body, (err)=> {
                 if(!err){
-                    socket.write(`HTTP/1.1 201 Created\r\n\r\n`);
+                    socket.write(`HTTP/1.1 201 OK\r\n\r\n`);
                     socket.end();   
+                }else{
+                    handle404();
                 }
             });
         }
