@@ -27,6 +27,9 @@ const matcher = (matchPath, req, res) => {
         req.params.id= req.path.split('/echo/')[1];
         return routes['/echo/:id'][req.method];
     }
+    if(req.path.startsWith('/user-agent')){
+        return routes['/user-agent'][req.method];
+    }
     if(req.path === '/'){
         return routes['/'][req.method];
     }
@@ -61,6 +64,13 @@ const routes = {
         'GET': (req,socket) => {
             const {params} =req;
             const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${params.id.length}\r\n\r\n${params.id}\r\n\r\n`
+            socket.write(response);
+        }
+    },
+    '/user-agent': {
+        'GET': (req,socket) => {
+            const {headers} =req;
+            const response = `HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: ${headers.userAgent.length}\r\n\r\n${headers.userAgent}\r\n\r\n`
             socket.write(response);
         }
     },
